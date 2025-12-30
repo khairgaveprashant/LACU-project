@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cylindrical Heat Transfer Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 { margin-top: 0; color: var(--primary); }
+        h2 { font-size: 1.25rem; margin-top: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+
+        /* Formula Display */
+        .formula-box {
+            background: #eff6ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        /* Fraction styling for HTML */
+        .fraction { display: inline-block; vertical-align: middle; text-align: center; }
+        .fraction .top { border-bottom: 2px solid currentColor; display: block; padding: 0 5px; }
+        .fraction .bottom { display: block; padding: 0 5px; }
+
+        /* Input Grid */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group { display: flex; flex-direction: column; }
+        label { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        input {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+        .unit { font-size: 0.8rem; color: #64748b; margin-top: 2px; }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #1d4ed8; }
+
+        /* Results & Steps */
+        #resultSection { display: none; margin-top: 2rem; animation: fadeIn 0.5s ease; }
+        .final-answer {
+            background: #dcfce7;
+            color: #166534;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #bbf7d0;
+        }
+
+        .step {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f1f5f9;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+        }
+        .step-title { font-weight: bold; margin-bottom: 0.5rem; color: #475569; }
+        .step-math { font-family: 'Courier New', Courier, monospace; background: white; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Cylindrical Heat Transfer Calculator</h1>
+    
+    <div class="formula-box">
+        <span>Q = </span>
+        <div class="fraction">
+            <span class="top">2 &pi; k L (T<sub>1</sub> - T<sub>2</sub>)</span>
+            <span class="bottom">ln(r<sub>2</sub> / r<sub>1</sub>)</span>
+        </div>
+    </div>
+
+    <div class="input-grid">
+        <div class="input-group">
+            <label>Thermal Conductivity (k)</label>
+            <input type="number" id="val_k" step="any" placeholder="e.g., 50">
+            <span class="unit">W/(m·K)</span>
+        </div>
+        <div class="input-group">
+            <label>Length of Cylinder (L)</label>
+            <input type="number" id="val_L" step="any" placeholder="e.g., 2">
+            <span class="unit">meters (m)</span>
+        </div>
+        <div class="input-group">
+            <label>Inner Temperature (T<sub>1</sub>)</label>
+            <input type="number" id="val_t1" step="any" placeholder="e.g., 150">
+            <span class="unit">Kelvin or Celsius</span>
+        </div>
+        <div class="input-group">
+            <label>Outer Temperature (T<sub>2</sub>)</label>
+            <input type="number" id="val_t2" step="any" placeholder="e.g., 30">
+            <span class="unit">Kelvin or Celsius</span>
+        </div>
+        <div class="input-group">
+            <label>Inner Radius (r<sub>1</sub>)</label>
+            <input type="number" id="val_r1" step="any" placeholder="e.g., 0.05">
+            <span class="unit">meters (m)</span>
+        </div>
+        <div class="input-group">
+            <label>Outer Radius (r<sub>2</sub>)</label>
+            <input type="number" id="val_r2" step="any" placeholder="e.g., 0.1">
+            <span class="unit">meters (m)</span>
+        </div>
+    </div>
+
+    <button onclick="calculateHeat()">Calculate & Show Steps</button>
+
+    <div id="resultSection">
+        <h2>Final Result</h2>
+        <div class="final-answer" id="finalQ"></div>
+
+        <h2>Step-by-Step Solution</h2>
+        <div id="stepsContainer"></div>
+    </div>
+</div>
+
+<script>
+    function calculateHeat() {
+        // 1. Get Values
+        const k = parseFloat(document.getElementById('val_k').value);
+        const L = parseFloat(document.getElementById('val_L').value);
+        const T1 = parseFloat(document.getElementById('val_t1').value);
+        const T2 = parseFloat(document.getElementById('val_t2').value);
+        const r1 = parseFloat(document.getElementById('val_r1').value);
+        const r2 = parseFloat(document.getElementById('val_r2').value);
+
+        // 2. Validation
+        if (isNaN(k) || isNaN(L) || isNaN(T1) || isNaN(T2) || isNaN(r1) || isNaN(r2)) {
+            alert("Please fill in all fields with valid numbers.");
+            return;
+        }
+        if (r1 <= 0 || r2 <= 0) {
+            alert("Radii must be positive numbers.");
+            return;
+        }
+        if (r1 >= r2) {
+            alert("Outer radius (r2) must be larger than inner radius (r1).");
+            return;
+        }
+
+        // 3. Calculation Logic
+        const PI = Math.PI;
+        const tempDiff = T1 - T2;
+        const numerator = 2 * PI * k * L * tempDiff;
+        
+        const rRatio = r2 / r1;
+        const denominator = Math.log(rRatio); // Math.log is natural log (ln)
+        
+        const Q = numerator / denominator;
+
+        // 4. Update UI
+        document.getElementById('resultSection').style.display = 'block';
+        document.getElementById('finalQ').innerHTML = `Q = ${Q.toFixed(4)} Watts`;
+
+        // 5. Generate Dynamic Steps
+        let stepsHtml = '';
+
+        // Step 1: List knowns
+        stepsHtml += `
+            <div class="step">
+                <div class="step-title">Step 1: Identify Given Values</div>
+                <div class="step-math">
+                    k = ${k} W/m·K<br>
+                    L = ${L} m<br>
+                    T<sub>1</sub> = ${T1}<br>
+                    T<sub>2</sub> = ${T2}<br>
+                    r<sub>1</sub> = ${r1} m<br>
+                    r<sub>2</sub> = ${r2} m
+                </div>
+            </div>`;
+
+        // Step 2: Numerator
+        stepsHtml += `
+            <div class="step">
+                <div class="step-title">Step 2: Calculate the Numerator (2&pi;kL&Delta;T)</div>
+                <p>First, find the temperature difference: (${T1} - ${T2}) = ${tempDiff.toFixed(2)}</p>
+                <div class="step-math">
+                    Num = 2 &times; &pi; &times; ${k} &times; ${L} &times; (${T1} - ${T2})<br>
+                    Num = 2 &times; 3.14159 &times; ${k} &times; ${L} &times; ${tempDiff.toFixed(2)}<br>
+                    Num &approx; <strong>${numerator.toFixed(4)}</strong>
+                </div>
+            </div>`;
+
+        // Step 3: Denominator
+        stepsHtml += `
+            <div class="step">
+                <div class="step-title">Step 3: Calculate the Denominator ln(r<sub>2</sub>/r<sub>1</sub>)</div>
+                <p>First, find the ratio of the radii: ${r2} / ${r1} = ${rRatio.toFixed(4)}</p>
+                <div class="step-math">
+                    Denom = ln(${r2} / ${r1})<br>
+                    Denom = ln(${rRatio.toFixed(4)})<br>
+                    Denom &approx; <strong>${denominator.toFixed(4)}</strong>
+                </div>
+            </div>`;
+
+        // Step 4: Final Division
+        stepsHtml += `
+            <div class="step">
+                <div class="step-title">Step 4: Divide Numerator by Denominator</div>
+                <div class="step-math">
+                    Q = ${numerator.toFixed(4)} / ${denominator.toFixed(4)}<br>
+                    Q = <strong>${Q.toFixed(4)} W</strong>
+                </div>
+            </div>`;
+
+        document.getElementById('stepsContainer').innerHTML = stepsHtml;
+    }
+</script>
+
+</body>
+</html>
